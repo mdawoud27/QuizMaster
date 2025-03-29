@@ -1,12 +1,33 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Brain, Trophy, Home, UserCircle } from "lucide-react";
+import { Brain, Trophy, Home, UserCircle, Settings } from "lucide-react";
 import { useAuthStore } from "../store/auth";
 import { AuthModal } from "./AuthModal";
+import { supabase } from "../lib/supabase";
 
 const Navbar = () => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const { user, signOut } = useAuthStore();
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    const checkIfAdmin = async () => {
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from("user_roles")
+        .select("*")
+        .eq("user_id", user.id)
+        .eq("role", "admin")
+        .single();
+
+      if (data && !error) {
+        setIsAdmin(true);
+      }
+    };
+
+    checkIfAdmin();
+  }, [user]);
 
   return (
     <nav className="bg-white shadow-lg">
@@ -38,6 +59,17 @@ const Navbar = () => {
               <Trophy className="h-5 w-5" />
               <span>Leaderboard</span>
             </Link>
+
+            {isAdmin && (
+              <Link
+                to="/admin/questions"
+                className="flex items-center space-x-1 px-3 py-2 rounded-md text-gray-700 hover:text-indigo-600 hover:bg-indigo-50 transition-colors"
+              >
+                <Settings className="h-5 w-5" />
+                <span>Manage Questions</span>
+              </Link>
+            )}
+
             {user ? (
               <div className="flex items-center space-x-2">
                 <UserCircle className="h-6 w-6 text-indigo-600" />

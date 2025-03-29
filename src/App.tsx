@@ -7,6 +7,7 @@ import Home from "./pages/Home";
 import Quiz from "./pages/Quiz";
 import Leaderboard from "./pages/Leaderboard";
 import Navbar from "./components/Navbar";
+import QuestionManagement from "./pages/QuestionManagement";
 
 const queryClient = new QueryClient();
 
@@ -34,6 +35,7 @@ function App() {
               <Route path="/" element={<Home />} />
               <Route path="/quiz" element={<Quiz />} />
               <Route path="/leaderboard" element={<Leaderboard />} />
+              <Route path="/admin/questions" element={<QuestionManagement />} />
             </Routes>
           </div>
         </div>

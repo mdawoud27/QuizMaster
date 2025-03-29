@@ -94,6 +94,70 @@ CREATE POLICY "Users can view their achievements" ON user_achievements
 CREATE POLICY "Users can unlock achievements" ON user_achievements
   FOR INSERT TO authenticated WITH CHECK (auth.uid() = user_id);
 
+-- Create the user_roles table
+CREATE TABLE user_roles (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  role TEXT NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(user_id, role)
+);
+
+-- Add RLS policies
+ALTER TABLE user_roles ENABLE ROW LEVEL SECURITY;
+
+-- Admin users can read all roles
+CREATE POLICY "Admin users can read all roles"
+  ON user_roles
+  FOR SELECT
+  USING (
+    EXISTS (
+      SELECT 1
+      FROM user_roles ur
+      WHERE ur.user_id = auth.uid() AND ur.role = 'admin'
+    )
+  );
+
+-- Users can read their own roles
+CREATE POLICY "Users can read their own roles"
+  ON user_roles
+  FOR SELECT
+  USING (user_id = auth.uid());
+
+-- Only admin users can insert, update, delete roles
+CREATE POLICY "Only admin users can insert roles"
+  ON user_roles
+  FOR INSERT
+  WITH CHECK (
+    EXISTS (
+      SELECT 1
+      FROM user_roles ur
+      WHERE ur.user_id = auth.uid() AND ur.role = 'admin'
+    )
+  );
+
+CREATE POLICY "Only admin users can update roles"
+  ON user_roles
+  FOR UPDATE
+  USING (
+    EXISTS (
+      SELECT 1
+      FROM user_roles ur
+      WHERE ur.user_id = auth.uid() AND ur.role = 'admin'
+    )
+  );
+
+CREATE POLICY "Only admin users can delete roles"
+  ON user_roles
+  FOR DELETE
+  USING (
+    EXISTS (
+      SELECT 1
+      FROM user_roles ur
+      WHERE ur.user_id = auth.uid() AND ur.role = 'admin'
+    )
+  );
+  
 -- Insert initial categories
 INSERT INTO categories (name, description, icon) VALUES
   ('Science', 'Test your knowledge of scientific concepts', 'flask'),
