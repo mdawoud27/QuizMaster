@@ -1,8 +1,13 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { Brain, Trophy, Home } from 'lucide-react';
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
+import { Brain, Trophy, Home, UserCircle } from "lucide-react";
+import { useAuthStore } from "../store/auth";
+import { AuthModal } from "./AuthModal";
 
 const Navbar = () => {
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const { user, signOut } = useAuthStore();
+
   return (
     <nav className="bg-white shadow-lg">
       <div className="container mx-auto px-4">
@@ -11,7 +16,7 @@ const Navbar = () => {
             <Brain className="h-8 w-8 text-indigo-600" />
             <span className="text-xl font-bold text-gray-800">QuizMaster</span>
           </Link>
-          <div className="flex space-x-4">
+          <div className="flex items-center space-x-4">
             <Link
               to="/"
               className="flex items-center space-x-1 px-3 py-2 rounded-md text-gray-700 hover:text-indigo-600 hover:bg-indigo-50 transition-colors"
@@ -33,9 +38,31 @@ const Navbar = () => {
               <Trophy className="h-5 w-5" />
               <span>Leaderboard</span>
             </Link>
+            {user ? (
+              <div className="flex items-center space-x-2">
+                <UserCircle className="h-6 w-6 text-indigo-600" />
+                <button
+                  onClick={() => signOut()}
+                  className="text-gray-700 hover:text-indigo-600"
+                >
+                  Sign Out
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => setIsAuthModalOpen(true)}
+                className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition-colors"
+              >
+                Sign In
+              </button>
+            )}
           </div>
         </div>
       </div>
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+      />
     </nav>
   );
 };
